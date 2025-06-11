@@ -1,22 +1,24 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { AuthContext } from "../context/AuthContext";
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState(""); // 🔴 Error state
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(""); // Clear error when user types
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        `${"https://ecommerceprojectbackend-em29.onrender.com"}/api/auth/login`,
+        `https://ecommerceprojectbackend-em29.onrender.com/api/auth/login`,
         form,
         {
           headers: {
@@ -26,16 +28,21 @@ const LoginPage = () => {
       );
 
       if (!response.data) {
-        toast.error("User data not found in response.");
+        setError("User data not found in response.");
         return;
       }
 
       login(response.data);
-      toast.success("Login successful");
       navigate("/");
     } catch (err) {
       console.error("Login error:", err.response || err);
-      toast.error(err.response?.data?.message || "Login failed");
+
+      const message =
+        err.response?.data?.message === "Invalid credentials"
+          ? "Incorrect email or password"
+          : err.response?.data?.message || "Login failed";
+
+      setError(message);
     }
   };
 
@@ -45,7 +52,9 @@ const LoginPage = () => {
         onSubmit={handleSubmit}
         className="w-full max-w-md bg-white rounded-2xl shadow-2xl px-8 py-10 space-y-6"
       >
-        <h2 className="text-3xl font-extrabold text-center text-gray-800">Welcome Back</h2>
+        <h2 className="text-3xl font-extrabold text-center text-gray-800">
+          Welcome Back
+        </h2>
 
         <input
           type="email"
@@ -56,6 +65,7 @@ const LoginPage = () => {
           required
           className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
         />
+
         <input
           type="password"
           name="password"
@@ -66,12 +76,17 @@ const LoginPage = () => {
           minLength={6}
           className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
         />
+
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300 shadow-sm hover:shadow-md"
         >
           Login
         </button>
+
+        {error && (
+          <p className="text-red-600 text-sm text-center -mt-4">{error}</p>
+        )}
 
         <p className="text-sm text-center text-gray-500">
           Don’t have an account?{" "}
