@@ -31,21 +31,13 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="hidden sm:flex items-center space-x-6">
-          <Link to="/" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">
-            Home
-          </Link>
-          <Link to="/products" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">
-            Products
-          </Link>
+          <Link to="/" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">Home</Link>
+          <Link to="/products" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">Products</Link>
           {user?.role === "admin" ? (
-            <Link to="/admin" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">
-              Admin Dashboard
-            </Link>
+            <Link to="/admin" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">Admin Dashboard</Link>
           ) : (
             user && (
-              <Link to="/dashboard" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">
-                My Dashboard
-              </Link>
+              <Link to="/dashboard" className="text-white hover:text-yellow-300 font-medium transition-all duration-200">My Dashboard</Link>
             )
           )}
         </div>
@@ -64,16 +56,10 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-md hover:bg-indigo-100 transition duration-300"
-              >
+              <Link to="/login" className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-md hover:bg-indigo-100 transition duration-300">
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-4 py-2 rounded-md transition duration-300"
-              >
+              <Link to="/register" className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-4 py-2 rounded-md transition duration-300">
                 Register
               </Link>
             </>
@@ -99,34 +85,47 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="sm:hidden bg-indigo-800 bg-opacity-95 px-6 py-6 space-y-5 shadow-2xl rounded-b-lg transition-all duration-300">
-          <div className="flex flex-col space-y-4">
-            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white font-medium text-lg hover:text-yellow-300">Home</Link>
-            <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="text-white font-medium text-lg hover:text-yellow-300">Products</Link>
+        <div className="sm:hidden bg-gradient-to-b from-indigo-800 to-purple-800 bg-opacity-95 px-6 py-6 space-y-6 rounded-b-xl shadow-xl animate-slideDown">
+          <div className="flex flex-col space-y-4 text-center">
+            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-semibold hover:text-yellow-300 transition">Home</Link>
+            <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-semibold hover:text-yellow-300 transition">Products</Link>
             {user?.role === "admin" ? (
-              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-white font-medium text-lg hover:text-yellow-300">Admin Dashboard</Link>
+              <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-semibold hover:text-yellow-300 transition">Admin Dashboard</Link>
             ) : (
               user && (
-                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-white font-medium text-lg hover:text-yellow-300">My Dashboard</Link>
+                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg font-semibold hover:text-yellow-300 transition">My Dashboard</Link>
               )
             )}
+
             {user ? (
               <>
-                <p className="text-white">Hello, <strong>{user.name}</strong></p>
+                <p className="text-white text-md">Hello, <strong>{user.name}</strong></p>
                 <button
                   onClick={() => {
                     handleLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full bg-blue-500 hover:bg-red-600 text-white py-2 rounded-md transition"
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition duration-300 shadow-md"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="bg-white text-indigo-700 py-2 text-center rounded-md font-semibold hover:bg-indigo-100 transition">Login</Link>
-                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="bg-yellow-400 hover:bg-yellow-500 text-white py-2 text-center rounded-md font-semibold transition">Register</Link>
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full bg-white text-indigo-700 font-semibold py-2 rounded-lg hover:bg-indigo-100 transition text-center"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 rounded-lg transition text-center"
+                >
+                  Register
+                </Link>
               </>
             )}
           </div>

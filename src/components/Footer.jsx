@@ -36,7 +36,7 @@ const Footer = () => {
           <h3 className="text-white font-bold mb-4">Follow Us</h3>
           <div className="flex space-x-4 text-xl">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-white">
-              <i className="fab fa-facebook"></i> {/* If using FontAwesome */}
+              <i className="fab fa-facebook"></i> 
               {/* Or use SVG icons */}
               <svg fill="currentColor" className="w-6 h-6" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.5 9.8v-6.9h-3v-2.9h3V9.8c0-3 1.8-4.6 4.5-4.6 1.3 0 2.6.2 2.6.2v2.9h-1.5c-1.5 0-2 1-2 2v2.2h3.4l-.5 2.9h-2.9v6.9A10 10 0 0022 12z"/></svg>
             </a>
