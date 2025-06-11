@@ -7,44 +7,60 @@ import "react-toastify/dist/ReactToastify.css";
 
 const ProductListPage = () => {
   const [products, setProducts] = useState([]);
+  const [displayedProducts, setDisplayedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const { cart, setCart } = useContext(CartContext);
   const navigate = useNavigate();
 
-  const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com" ;
-;
+  const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com";
 
-  // 👇 Separate async function for API call
   const fetchProducts = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/products`);
-      console.log("API response:", res.data); // Debugging the response
+      const productList = Array.isArray(res.data) ? res.data : res.data.products || [];
 
-      // Check if the response is an array
-      if (Array.isArray(res.data)) {
-        setProducts(res.data);
-      } else if (res.data.products && Array.isArray(res.data.products)) {
-        setProducts(res.data.products); // If API wraps in `products`
-      } else {
-        setError("Invalid response from server.");
-      }
-
+      setProducts(productList);
+      setDisplayedProducts(productList);
       setLoading(false);
     } catch (err) {
-      console.error("Error fetching products:", err);
       setError("Failed to load products.");
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts(); // 👈 Call the async function
+    fetchProducts();
   }, []);
+
+  // 🔍 Filter & Sort Logic
+  useEffect(() => {
+    let filtered = [...products];
+
+    if (searchTerm) {
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (categoryFilter) {
+      filtered = filtered.filter((p) => p.category === categoryFilter);
+    }
+
+    if (sortOrder === "asc") {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortOrder === "desc") {
+      filtered.sort((a, b) => b.price - a.price);
+    }
+
+    setDisplayedProducts(filtered);
+  }, [searchTerm, sortOrder, categoryFilter, products]);
 
   const handleAddToCart = (product) => {
     const alreadyInCart = cart.find((item) => item._id === product._id);
-
     const updated = alreadyInCart
       ? cart.map((item) =>
           item._id === product._id
@@ -62,31 +78,58 @@ const ProductListPage = () => {
       theme: "colored",
       transition: Slide,
     });
-  
   };
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4">
-      <h1 className="text-3xl font-bold text-center mb-8 text-green-700">
-        Our Products
-      </h1>
+      <h1 className="text-3xl font-bold text-center mb-6 text-green-700">Our Products</h1>
 
+      {/* 🔍 Search & Filters */}
+      <div className="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <input
+          type="text"
+          placeholder="Search products..."
+          className="p-2 border border-gray-300 rounded w-full sm:w-1/3"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <select
+          className="p-2 border border-gray-300 rounded"
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
+          <option value="">Sort by</option>
+          <option value="asc">Price: Low to High</option>
+          <option value="desc">Price: High to Low</option>
+        </select>
+
+        <select
+          className="p-2 border border-gray-300 rounded"
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          <option value="">Filter by Category</option>
+          <option value="fruits">Fruits</option>
+          <option value="vegetables">Vegetables</option>
+          <option value="dry-fruits">Dry Fruits</option>
+          {/* Add more categories as needed */}
+        </select>
+      </div>
+
+      {/* 🌀 Loading / Error / Products */}
       {loading && (
         <p className="text-center text-lg font-semibold text-gray-500">
           Loading products...
         </p>
       )}
-
       {error && (
         <p className="text-center text-red-500 text-lg">{error}</p>
       )}
-
-      {!loading && products.length === 0 && (
+      {!loading && displayedProducts.length === 0 && (
         <p className="text-center text-gray-500">No products found.</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {products.map((product) => (
+        {displayedProducts.map((product) => (
           <div
             key={product._id}
             className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition-shadow duration-300"
@@ -117,12 +160,8 @@ const ProductListPage = () => {
         ))}
       </div>
 
-  <ToastContainer
-            position="top-right"
-            autoClose={1500}
-            transition={Slide}
-            theme="colored"
-          />    </div>
+      <ToastContainer />
+    </div>
   );
 };
 
