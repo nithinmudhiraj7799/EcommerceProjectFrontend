@@ -1,3 +1,4 @@
+// src/ManageOrders.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -5,18 +6,27 @@ const ManageOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com"
+;
   const user = JSON.parse(localStorage.getItem("user"));
   const token = user?.token;
 
   useEffect(() => {
     const fetchOrders = async () => {
+      if (!token) {
+        setError("No token found. Please login first.");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await axios.get("http://localhost:5004/api/orders", {
+        const res = await axios.get(`${BASE_URL}/api/orders`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        // console.log(res)
+
         setOrders(res.data);
       } catch (err) {
         console.error(err);
@@ -26,18 +36,13 @@ const ManageOrders = () => {
       }
     };
 
-    if (token) {
-      fetchOrders();
-    } else {
-      setError("No token found. Please login first.");
-      setLoading(false);
-    }
-  }, [token]);
+    fetchOrders();
+  }, [token, BASE_URL]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:5004/api/orders/${orderId}/status`,
+        `${BASE_URL}/api/orders/${orderId}/status`,
         { status: newStatus.toLowerCase() },
         {
           headers: {
@@ -57,8 +62,6 @@ const ManageOrders = () => {
       alert("Failed to update order status. Please try again.");
     }
   };
-    // console.log(orders)
-
 
   if (loading)
     return <p className="text-center mt-10 text-lg text-gray-600">Loading orders...</p>;
@@ -69,7 +72,7 @@ const ManageOrders = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Manage Orders</h1>
 
-      {/* Mobile cards */}
+      {/* Mobile View */}
       <div className="space-y-4 sm:hidden">
         {orders.length === 0 ? (
           <div className="text-center py-6 text-gray-500">No orders found.</div>
@@ -79,17 +82,11 @@ const ManageOrders = () => {
               key={order._id}
               className="p-4 border rounded-lg shadow-sm bg-white"
             >
-              <p>
-                <strong>Order ID:</strong> {order._id}
-              </p>
-              <p>
-                <strong>Customer:</strong> {order.user?.name || "Unknown"}
-              </p>
-              <p>
-                <strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}
-              </p>
+              <p><strong>Order ID:</strong> {order._id}</p>
+              <p><strong>Customer:</strong> {order.user?.name || "Unknown"}</p>
+              <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
               <p className="text-green-600 font-semibold">
-                <strong>Total:</strong> ₹{order.price || "N/A"}
+                <strong>Total:</strong> ₹{order.total || order.price || "N/A"}
               </p>
               <p className="capitalize text-blue-700 font-medium">
                 <strong>Status:</strong> {order.status}
@@ -112,7 +109,7 @@ const ManageOrders = () => {
         )}
       </div>
 
-      {/* Desktop table */}
+      {/* Desktop Table View */}
       <div className="hidden sm:block overflow-x-auto rounded-lg shadow-md">
         <table className="min-w-full divide-y divide-gray-200 bg-white text-sm">
           <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
@@ -141,24 +138,23 @@ const ManageOrders = () => {
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 text-green-600 font-semibold">
-                    ₹{order.price || "N/A"}
+                    ₹{order.total || order.price || "N/A"}
                   </td>
                   <td className="px-6 py-4 capitalize text-blue-700 font-medium">
                     {order.status}
                   </td>
                   <td className="px-6 py-4">
                     <select
-  value={order.status}
-  onChange={(e) => handleStatusChange(order._id, e.target.value)}
-  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
->
-  <option value="pending">Pending</option>
-  <option value="processing">Processing</option>
-  <option value="shipped">Shipped</option>
-  <option value="delivered">Delivered</option>
-  <option value="cancelled">Cancelled</option>
-</select>
-
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
                   </td>
                 </tr>
               ))

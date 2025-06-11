@@ -15,7 +15,7 @@ const RegisterPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5004/api/auth/register",
+        `${"https://ecommerceprojectbackend-em29.onrender.com"}/api/auth/register`,
         form,
         {
           headers: {
@@ -36,9 +36,7 @@ const RegisterPage = () => {
         onSubmit={handleSubmit}
         className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full"
       >
-        <h2 className="text-3xl font-bold mb-6 text-center text-gray-700">
-          Register
-        </h2>
+        <h2 className="text-3xl font-bold mb-6 text-center text-gray-700">Register</h2>
 
         <input
           type="text"
@@ -69,7 +67,6 @@ const RegisterPage = () => {
           className="w-full p-3 mb-6 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
         />
 
-        {/* 👇 Role selection (radio buttons) */}
         <div className="mb-6">
           <label className="block mb-2 font-semibold text-gray-700">Select Role:</label>
           <div className="flex gap-4">

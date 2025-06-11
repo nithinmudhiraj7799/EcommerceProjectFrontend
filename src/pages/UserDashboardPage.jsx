@@ -14,7 +14,7 @@ const UserDashboardPage = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5004/api/orders/myorders", {
+        const res = await axios.get("https://ecommerceprojectbackend-em29.onrender.com/api/orders/myorders", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

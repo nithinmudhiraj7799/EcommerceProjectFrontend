@@ -1,52 +1,75 @@
-import React, { useEffect, useState } from "react";
+// src/ProductDetailPage.js
+import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { CartContext } from "./CartContext";
+import { toast, ToastContainer, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const { cart, setCart } = useContext(CartContext);
 
-  const fetchProduct = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5004/api/products/${id}`);
-      setProduct(res.data);
-    } catch (err) {
-      console.error("Error loading product", err);
-    }
-  };
+  const BASE_URL ="https://ecommerceprojectbackend-em29.onrender.com"
+;
 
   useEffect(() => {
-    fetchProduct();
+    axios
+      .get(`${BASE_URL}/api/products/${id}`)
+      .then((res) => setProduct(res.data))
+      .catch((err) => console.error("Error loading product", err));
   }, [id]);
 
-  if (!product) {
+  const handleAdd = () => {
+    const updated = cart.find((item) => item._id === product._id)
+      ? cart.map((item) =>
+          item._id === product._id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      : [...cart, { ...product, quantity: 1 }];
+    setCart(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
+
+    toast.success(`✅ ${product.name} added to cart!`, {
+      position: "bottom-right",
+      autoClose: 1500,
+      theme: "colored",
+      transition: Slide,
+    });
+  };
+
+  if (!product)
     return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-gray-600 text-lg animate-pulse">Loading product...</p>
-      </div>
+      <p className="text-center text-lg text-gray-600 py-10">
+        Loading product...
+      </p>
     );
-  }
 
   return (
-    <div className="p-6 min-h-screen bg-gray-50 flex justify-center items-center">
-      <div className="bg-white shadow-lg rounded-xl overflow-hidden max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-        {product.image && (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-64 object-cover rounded-md"
-          />
-        )}
-
-        <div className="flex flex-col justify-center">
-          <h2 className="text-3xl font-bold text-indigo-700 mb-2">{product.name}</h2>
-          <p className="text-gray-700 mb-4">{product.description}</p>
-          <p className="text-2xl font-semibold text-green-600">${product.price}</p>
-          <button className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition">
-            Add to Cart 🛒
-          </button>
-        </div>
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-md">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-64 object-cover rounded mb-4"
+        />
+        <h2 className="text-2xl font-bold mb-2 text-gray-800">
+          {product.name}
+        </h2>
+        <p className="text-gray-600 mb-3">{product.description}</p>
+        <p className="text-xl text-green-600 font-semibold mb-4">
+          ₹{product.price}
+        </p>
+        <button
+          onClick={handleAdd}
+          className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded shadow transition"
+        >
+          Add to Cart
+        </button>
       </div>
+      <ToastContainer />
     </div>
   );
 };

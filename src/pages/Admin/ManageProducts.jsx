@@ -17,10 +17,15 @@ const ManageProducts = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com"
+;
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = user?.token;
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5004/api/products");
+      const res = await axios.get(`${BASE_URL}/api/products`);
       setProducts(res.data);
     } catch (err) {
       toast.error("Failed to fetch products");
@@ -45,41 +50,34 @@ const ManageProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const user = JSON.parse(localStorage.getItem("user"));
-    const token = user?.token;
     if (!token) {
-      toast.error("You must be logged in to perform this action.");
+      toast.error("You must be logged in.");
       return;
     }
 
     setSubmitting(true);
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("price", form.price);
+    formData.append("category", form.category);
+    formData.append("countInStock", form.countInStock);
+    if (form.image) formData.append("image", form.image);
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
 
     try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("description", form.description);
-      formData.append("price", form.price);
-      formData.append("category", form.category);
-      formData.append("countInStock", form.countInStock);
-      if (form.image) formData.append("image", form.image);
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      };
-
       if (editingId) {
-        await axios.put(
-          `http://localhost:5004/api/products/${editingId}`,
-          formData,
-          config
-        );
-        toast.success("Product updated successfully!");
+        await axios.put(`${BASE_URL}/api/products/${editingId}`, formData, config);
+        toast.success("Product updated");
       } else {
-        await axios.post("http://localhost:5004/api/products", formData, config);
-        toast.success("Product added successfully!");
+        await axios.post(`${BASE_URL}/api/products`, formData, config);
+        toast.success("Product added");
       }
 
       setForm({
@@ -106,25 +104,22 @@ const ManageProducts = () => {
       price: product.price?.toString() || "",
       category: product.category || "",
       countInStock: product.countInStock?.toString() || "",
-      image: null, // Clear file input; image already in DB
+      image: null,
     });
     setEditingId(product._id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const token = user?.token;
-
     if (!token) {
-      toast.error("You must be logged in to delete a product.");
+      toast.error("You must be logged in.");
       return;
     }
 
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    toast.info("Deleting product...");
 
     try {
-      await axios.delete(`http://localhost:5004/api/products/${id}`, {
+      await axios.delete(`${BASE_URL}/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Product deleted");
@@ -232,7 +227,7 @@ const ManageProducts = () => {
                 products.map((product) => (
                   <tr key={product._id} className="hover:bg-blue-50 transition">
                     <td className="px-6 py-4">{product.name}</td>
-                    <td className="px-6 py-4">₹{product.price.toFixed(2)}</td>
+                    <td className="px-6 py-4">₹{product.price?.toFixed(2)}</td>
                     <td className="px-6 py-4">{product.category}</td>
                     <td className="px-6 py-4">{product.countInStock}</td>
                     <td className="px-6 py-4">

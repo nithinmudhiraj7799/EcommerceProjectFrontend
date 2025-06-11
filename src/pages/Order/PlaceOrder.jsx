@@ -1,123 +1,3 @@
-// import React, { useState, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
-// import axios from "axios";
-
-// const PlaceOrder = () => {
-//   const [cartItems, setCartItems] = useState([]);
-//   const [addressId, setAddressId] = useState(""); 
-//   const [loading, setLoading] = useState(false);
-//   const [message, setMessage] = useState("");
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-//     setCartItems(storedCart);
-
-//     // You might fetch user's saved addresses here from backend
-//     // and show options for the user to pick one.
-//   }, []);
-
-//   const totalPrice = cartItems.reduce(
-//     (total, item) => total + item.price * item.quantity,
-//     0
-//   );
-
-//   const handlePlaceOrder = async () => {
-//     if (!addressId) {
-//       setMessage("❌ Please select an address before placing the order.");
-//       return;
-//     }
-
-//     setLoading(true);
-//     setMessage("");
-
-//     try {
-//       const token = localStorage.getItem("token");
-
-//       const response = await axios.post(
-//         "http://localhost:5004/api/orders/",
-//         { items: cartItems, address: addressId }, 
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-
-//       setMessage("✅ Order placed successfully! Redirecting to payment...");
-//       setTimeout(() => {
-//         navigate("/payment");
-//       }, 2000);
-//     } catch (error) {
-//       setMessage(`❌ ${error.response?.data?.message || "Failed to place order"}`);
-//     }
-
-//     setLoading(false);
-//   };
-
-//   return (
-//     <div className="max-w-3xl mx-auto p-6 bg-white rounded shadow">
-//       <h2 className="text-2xl font-bold mb-4">Review Your Order</h2>
-
-//       {cartItems.length === 0 ? (
-//         <p className="text-gray-500">Your cart is empty.</p>
-//       ) : (
-//         <>
-//           {/* Show cart items */}
-//           <div className="space-y-4">
-//             {cartItems.map((item, idx) => (
-//               <div key={idx} className="border p-4 rounded flex justify-between">
-//                 <div>
-//                   <h4 className="font-semibold">{item.name}</h4>
-//                   <p>Quantity: {item.quantity}</p>
-//                 </div>
-//                 <div className="text-right">
-//                   <p className="text-lg font-medium">₹ {item.price * item.quantity}</p>
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-
-//           {/* Address selection UI (simplified) */}
-//           <div className="mt-6">
-//             <label htmlFor="address" className="block font-semibold mb-2">
-//               Select Shipping Address:
-//             </label>
-//             <select
-//               id="address"
-//               value={addressId}
-//               onChange={(e) => setAddressId(e.target.value)}
-//               className="border p-2 rounded w-full"
-//             >
-//               <option value="">-- Select Address --</option>
-//               {/* TODO: Replace with dynamic user addresses fetched from backend */}
-//               <option value="68428d1dce1e3e34def45326">12A, MG Road, Hyderabad</option>
-//               <option value="another_address_id">Another Address</option>
-//             </select>
-//           </div>
-
-//           <div className="mt-6 text-right">
-//             <h3 className="text-xl font-bold">
-//               Total: ₹ {totalPrice.toFixed(2)}
-//             </h3>
-//           </div>
-
-//           {message && <p className="mt-4 text-center text-sm text-blue-600">{message}</p>}
-
-//           <button
-//             onClick={handlePlaceOrder}
-//             disabled={loading}
-//             className="w-full mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-//           >
-//             {loading ? "Placing Order..." : "Proceed to Payment"}
-//           </button>
-//         </>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default PlaceOrder;
 
 
 import React, { useState, useEffect } from "react";
@@ -143,10 +23,10 @@ const PlaceOrder = () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
         const token = user?.token;
-          console.log("🛒 Cart Items:", cartItems);
-console.log("🧾 Mapped Order Items:", orderItems);
-console.log("🏠 Address ID:", addressId);
-console.log("🔑 Token:", token);
+//           console.log(" Cart Items:", cartItems);
+// console.log(" Mapped Order Items:", orderItems);
+// console.log(" Address ID:", addressId);
+// console.log(" Token:", token);
 
         const { data } = await axios.get("http://localhost:5004/api/address/my", {
           headers: {
@@ -192,10 +72,10 @@ console.log("🔑 Token:", token);
       //   items: orderItems,
       //   address: addressId,
       // });
-      console.log("🛒 Cart Items:", cartItems);
-console.log("🧾 Mapped Order Items:", orderItems);
-console.log("🏠 Address ID:", addressId);
-console.log("🔑 Token:", token);
+//       console.log("🛒 Cart Items:", cartItems);
+// console.log("🧾 Mapped Order Items:", orderItems);
+// console.log("🏠 Address ID:", addressId);
+// console.log("🔑 Token:", token);
 
       const response = await axios.post(
         "http://localhost:5004/api/orders/",

@@ -1,152 +1,139 @@
+// src/CheckoutPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CheckoutPage = () => {
   const [address, setAddress] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+
+  const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com";
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const token = user?.token;
+
+      if (!token) {
+        toast.error("❌ Please login to checkout", {
+          position: "top-right",
+          autoClose: 1500,
+          transition: Slide,
+          theme: "colored",
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
-        const userString = localStorage.getItem("user");
-        const user = userString ? JSON.parse(userString) : null;
-        const token = user?.token;
-
-        if (!token) {
-          toast.error("Please login to checkout");
-          setLoading(false);
-          return;
-        }
-
-        // Fetch saved address
-        const addressRes = await axios.get("http://localhost:5004/api/address/my", {
+        const addressRes = await axios.get(`${BASE_URL}/api/address/my`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        const addressData = addressRes.data;
-        console.log("Address Data:", addressData);
-
-        if (Array.isArray(addressData)) {
-          if (addressData.length > 0) {
-            setAddress(addressData[0]); 
-          } else {
-            setAddress(null);
-            toast.warn("No saved address found. Please add your address before checkout.");
-          }
-        } else if (addressData && typeof addressData === "object") {
-          setAddress(addressData); 
-        } else {
-          setAddress(null);
-          toast.warn("No saved address found. Please add your address before checkout.");
-        }
-
-        // Fetch cart
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-        setCartItems(cart);
-      } catch (err) {
-        console.error("Error fetching checkout data:", err);
-        toast.error("Failed to load checkout data.");
+        setAddress(addressRes.data[0] || null);
+        setCartItems(JSON.parse(localStorage.getItem("cart")) || []);
+      } catch (error) {
+        toast.error("❌ Error fetching checkout data", {
+          position: "top-right",
+          autoClose: 1500,
+          transition: Slide,
+          theme: "colored",
+        });
       }
+
       setLoading(false);
     };
 
     fetchData();
-  }, []);
+  }, [BASE_URL]);
 
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+  const getTotalPrice = () =>
+    cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
   const handleConfirmOrder = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const token = user?.token;
+
+    if (!token || !address) return;
+
+    const orderData = {
+      items: cartItems.map((item) => ({
+        product: item._id,
+        quantity: item.quantity,
+      })),
+      address: address._id,
+    };
+
     try {
-      const userString = localStorage.getItem("user");
-      const user = userString ? JSON.parse(userString) : null;
-      const token = user?.token;
-
-      if (!token) {
-        toast.error("Please login to place order.");
-        return;
-      }
-
-      if (!address) {
-        toast.warn("Please add your address before placing an order.");
-        return;
-      }
-
-      const orderData = {
-        items: cartItems.map((item) => ({
-          product: item._id,
-          quantity: item.quantity,
-        })),
-        address: address._id,
-      };
-
-      await axios.post("http://localhost:5004/api/orders", orderData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      await axios.post(`${BASE_URL}/api/orders`, orderData, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      toast.success("Order placed successfully!");
+      toast.success("✅ Order placed successfully!", {
+        position: "top-right",
+        autoClose: 1500,
+        transition: Slide,
+        theme: "colored",
+      });
+
       localStorage.removeItem("cart");
       setCartItems([]);
-    } catch (error) {
-      console.error("Order failed:", error);
-      toast.error("Failed to place order. Try again.");
+    } catch {
+      toast.error("❌ Failed to place order.", {
+        position: "top-right",
+        autoClose: 1500,
+        transition: Slide,
+        theme: "colored",
+      });
     }
   };
 
-  if (loading) return <p>Loading checkout details...</p>;
-
-  if (!address) return <p>{message || "No saved address found. Please add your address."}</p>;
+  if (loading)
+    return <p className="text-center py-10 text-gray-600">Loading checkout data...</p>;
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded shadow mt-8">
-      <h2 className="text-xl font-bold mb-4">Checkout</h2>
+    <div className="p-6 max-w-2xl mx-auto min-h-screen bg-gray-100">
+      <h2 className="text-2xl font-bold mb-6 text-center">🛒 Checkout</h2>
 
-      <div className="mb-6">
-        <h3 className="font-semibold">Shipping Address</h3>
-        <p>{address.fullName}</p>
-        <p>{address.mobile}</p>
-        <p>
-          {address.houseNo}, {address.street}, {address.city}, {address.state} - {address.pinCode}
-        </p>
-        {address.landmark && <p>Landmark: {address.landmark}</p>}
-      </div>
+      {address ? (
+        <>
+          <div className="bg-white p-4 rounded shadow mb-4">
+            <h3 className="text-lg font-semibold mb-2">Shipping Address</h3>
+            <p>{address.fullName}</p>
+            <p>{address.city}</p>
+          </div>
 
-      <div className="mb-6">
-        <h3 className="font-semibold">Order Summary</h3>
-        {cartItems.length === 0 ? (
-          <p>Your cart is empty.</p>
-        ) : (
-          cartItems.map((item) => (
-            <div key={item._id} className="flex justify-between border-b py-2">
-              <span>{item.name} x {item.quantity}</span>
-              <span>₹{item.price * item.quantity}</span>
-            </div>
-          ))
-        )}
+          <div className="bg-white p-4 rounded shadow">
+            <h3 className="text-lg font-semibold mb-3">Cart Items</h3>
+            {cartItems.map((item) => (
+              <div key={item._id} className="flex justify-between py-1 border-b">
+                <span>
+                  {item.name} × {item.quantity}
+                </span>
+                <span>₹{item.price * item.quantity}</span>
+              </div>
+            ))}
+            <p className="text-right font-bold mt-3">Total: ₹{getTotalPrice()}</p>
+            <button
+              onClick={handleConfirmOrder}
+              className="w-full bg-green-600 hover:bg-green-700 text-white mt-4 px-4 py-2 rounded transition"
+            >
+              ✅ Confirm Order
+            </button>
+          </div>
+        </>
+      ) : (
+        <p className="text-red-500 text-center mt-6">No address found.</p>
+      )}
 
-        <div className="flex justify-between font-bold mt-4">
-          <span>Total:</span>
-          <span>₹{getTotalPrice()}</span>
-        </div>
-      </div>
-
-      <button
-        onClick={handleConfirmOrder}
-        className="w-full bg-indigo-600 text-white p-3 rounded hover:bg-indigo-700"
-      >
-        Confirm Order
-      </button>
-
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer
+        position="top-right"
+        autoClose={1500}
+        transition={Slide}
+        theme="colored"
+      />
     </div>
   );
 };
