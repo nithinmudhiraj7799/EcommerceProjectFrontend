@@ -22,6 +22,8 @@ const ProductListPage = () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/products`);
       const productList = Array.isArray(res.data) ? res.data : res.data.products || [];
+      // console.log("Fetched products:", productList.map(p => p.category));
+
       setProducts(productList);
       setDisplayedProducts(productList);
       setLoading(false);
@@ -43,10 +45,13 @@ const ProductListPage = () => {
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     if (categoryFilter) {
-      filtered = filtered.filter((p) => p.category === categoryFilter);
+      filtered = filtered.filter(
+  (p) => p.category?.toLowerCase() === categoryFilter.toLowerCase()
+
+      );
     }
+
 
     if (sortOrder === "asc") {
       filtered.sort((a, b) => a.price - b.price);
@@ -61,10 +66,10 @@ const ProductListPage = () => {
     const alreadyInCart = cart.find((item) => item._id === product._id);
     const updated = alreadyInCart
       ? cart.map((item) =>
-          item._id === product._id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+        item._id === product._id
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      )
       : [...cart, { ...product, quantity: 1 }];
 
     setCart(updated);
@@ -103,15 +108,18 @@ const ProductListPage = () => {
           <option value="desc"> Price: High to Low</option>
         </select>
 
-        <select
-          className="p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          onChange={(e) => setCategoryFilter(e.target.value)}
-        >
-          <option value="">🍽 Filter by Category</option>
-          <option value="fruits"> Fruits</option>
-          <option value="vegetables"> Vegetables</option>
-          <option value="dry-fruits"> Dry Fruits</option>
-        </select>
+       <select
+  className="p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+  value={categoryFilter}
+  onChange={(e) => setCategoryFilter(e.target.value)}
+>
+  <option value="">🍽 Filter by Category</option>
+  <option value="fruit">Fruit</option>
+  <option value="vegetable">Vegetable</option>
+  <option value="dry fruit">Dry Fruit</option>
+</select>
+
+
       </div>
 
       {/* Loader / Error / No Products */}

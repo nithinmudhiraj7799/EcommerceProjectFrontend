@@ -1,14 +1,18 @@
-// src/ManageOrders.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FaSearch, FaSort } from "react-icons/fa";
 
 const ManageOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortByRecent, setSortByRecent] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com"
-;
+  const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com";
   const user = JSON.parse(localStorage.getItem("user"));
   const token = user?.token;
 
@@ -26,7 +30,6 @@ const ManageOrders = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
         setOrders(res.data);
       } catch (err) {
         console.error(err);
@@ -37,7 +40,7 @@ const ManageOrders = () => {
     };
 
     fetchOrders();
-  }, [token, BASE_URL]);
+  }, [token]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -47,21 +50,57 @@ const ManageOrders = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
         }
       );
-
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
+      setOrders((prev) =>
+        prev.map((order) =>
           order._id === orderId ? { ...order, status: newStatus.toLowerCase() } : order
         )
       );
+      toast.success("Status updated successfully!");
     } catch (error) {
-      console.error("Failed to update order status:", error);
-      alert("Failed to update order status. Please try again.");
+      console.error("Failed to update status", error);
+      toast.error("Failed to update order status.");
     }
   };
+
+  // Delete function commented as per your request
+  /*
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      const res = await axios.delete(`${BASE_URL}/api/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.status === 200 || res.status === 204) {
+        setOrders((prev) => prev.filter((order) => order._id !== orderId));
+        toast.success("Order deleted successfully!");
+      } else {
+        toast.error("Failed to delete order. Please try again.");
+      }
+    } catch (err) {
+      console.error("Delete error", err);
+      toast.error("Failed to delete order.");
+    }
+  };
+  */
+
+  const filteredOrders = orders
+    .filter((order) =>
+      order.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order._id.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter((order) =>
+      statusFilter === "all" ? true : order.status === statusFilter
+    )
+    .sort((a, b) => {
+      return sortByRecent
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt);
+    });
 
   if (loading)
     return <p className="text-center mt-10 text-lg text-gray-600">Loading orders...</p>;
@@ -69,33 +108,62 @@ const ManageOrders = () => {
     return <p className="text-red-600 text-center mt-10 font-semibold">{error}</p>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Manage Orders</h1>
+    <div className="max-w-7xl mx-auto px-4 py-10">
+      <ToastContainer />
+      <h1 className="text-3xl font-bold text-center mb-8 text-indigo-700">Manage Orders</h1>
 
-      {/* Mobile View */}
-      <div className="space-y-4 sm:hidden">
-        {orders.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">No orders found.</div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-white shadow-sm w-full sm:w-1/3">
+          <FaSearch className="text-gray-500" />
+          <input
+            type="text"
+            placeholder="Search by name or order ID"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full outline-none text-sm"
+          />
+        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-full sm:w-auto px-3 py-2 border rounded-md text-sm bg-white shadow-sm"
+        >
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+
+        <button
+          onClick={() => setSortByRecent(!sortByRecent)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 transition"
+        >
+          <FaSort />
+          Sort by {sortByRecent ? "Old" : "Recent"}
+        </button>
+      </div>
+
+      {/* Cards for mobile and responsive view */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredOrders.length === 0 ? (
+          <p className="col-span-full text-center text-gray-500">No orders found.</p>
         ) : (
-          orders.map((order) => (
-            <div
-              key={order._id}
-              className="p-4 border rounded-lg shadow-sm bg-white"
-            >
-              <p><strong>Order ID:</strong> {order._id}</p>
-              <p><strong>Customer:</strong> {order.user?.name || "Unknown"}</p>
-              <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
-              <p className="text-green-600 font-semibold">
-                <strong>Total:</strong> ₹{order.total || order.price || "N/A"}
-              </p>
-              <p className="capitalize text-blue-700 font-medium">
-                <strong>Status:</strong> {order.status}
-              </p>
-              <div className="mt-2">
+          filteredOrders.map((order) => (
+            <div key={order._id} className="bg-white p-4 shadow rounded-md border border-gray-100 hover:shadow-lg transition">
+              <h2 className="font-semibold text-indigo-600 text-sm mb-2">Order ID: {order._id}</h2>
+              <p className="text-sm text-gray-700"><span className="font-semibold">Customer:</span> {order.user?.name || "Unknown"}</p>
+              <p className="text-sm text-gray-700"><span className="font-semibold">Date:</span> {new Date(order.createdAt).toLocaleDateString()}</p>
+              <p className="text-sm text-green-600 font-bold"><span className="font-semibold">Total:</span> ₹{order.total || order.price || "N/A"}</p>
+              <p className="text-sm text-blue-600"><span className="font-semibold">Status:</span> {order.status}</p>
+
+              <div className="mt-3">
                 <select
                   value={order.status}
                   onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-300 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
                 >
                   <option value="pending">Pending</option>
                   <option value="processing">Processing</option>
@@ -104,63 +172,19 @@ const ManageOrders = () => {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
+
+              {/* Delete button commented */}
+              {/* 
+              <button
+                onClick={() => handleDeleteOrder(order._id)}
+                className="w-full mt-3 bg-red-500 text-white py-2 rounded-md text-sm hover:bg-red-600"
+              >
+                Delete Order
+              </button> 
+              */}
             </div>
           ))
         )}
-      </div>
-
-      {/* Desktop Table View */}
-      <div className="hidden sm:block overflow-x-auto rounded-lg shadow-md">
-        <table className="min-w-full divide-y divide-gray-200 bg-white text-sm">
-          <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-            <tr>
-              <th className="px-6 py-3 text-left font-semibold uppercase">Order ID</th>
-              <th className="px-6 py-3 text-left font-semibold uppercase">Customer</th>
-              <th className="px-6 py-3 text-left font-semibold uppercase">Date</th>
-              <th className="px-6 py-3 text-left font-semibold uppercase">Total</th>
-              <th className="px-6 py-3 text-left font-semibold uppercase">Status</th>
-              <th className="px-6 py-3 text-left font-semibold uppercase">Update</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {orders.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center py-6 text-gray-500">
-                  No orders found.
-                </td>
-              </tr>
-            ) : (
-              orders.map((order) => (
-                <tr key={order._id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-gray-700">{order._id}</td>
-                  <td className="px-6 py-4 text-gray-700">{order.user?.name || "Unknown"}</td>
-                  <td className="px-6 py-4 text-gray-700">
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-green-600 font-semibold">
-                    ₹{order.total || order.price || "N/A"}
-                  </td>
-                  <td className="px-6 py-4 capitalize text-blue-700 font-medium">
-                    {order.status}
-                  </td>
-                  <td className="px-6 py-4">
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
       </div>
     </div>
   );
