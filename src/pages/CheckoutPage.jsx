@@ -1,8 +1,8 @@
-// src/CheckoutPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom"; // ✅ Add this
 
 const CheckoutPage = () => {
   const [address, setAddress] = useState(null);
@@ -10,6 +10,8 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(true);
 
   const BASE_URL = "https://ecommerceprojectbackend-em29.onrender.com";
+
+  const navigate = useNavigate(); // ✅ Initialize
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,9 +34,22 @@ const CheckoutPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setAddress(addressRes.data[0] || null);
+        console.log("📦 Address Response:", addressRes.data);
+
+        const fetchedAddress = Array.isArray(addressRes.data)
+          ? addressRes.data[0]
+          : addressRes.data;
+
+        if (fetchedAddress && fetchedAddress._id) {
+          setAddress(fetchedAddress);
+        } else {
+          setAddress(null);
+          console.warn("⚠️ No valid address found in response.");
+        }
+
         setCartItems(JSON.parse(localStorage.getItem("cart")) || []);
       } catch (error) {
+        console.error("❌ Error fetching checkout data:", error);
         toast.error("❌ Error fetching checkout data", {
           position: "top-right",
           autoClose: 1500,
@@ -80,6 +95,9 @@ const CheckoutPage = () => {
 
       localStorage.removeItem("cart");
       setCartItems([]);
+
+      // ✅ Navigate to payment page
+navigate(`/payment?amount=${getTotalPrice()}`)
     } catch {
       toast.error("❌ Failed to place order.", {
         position: "top-right",

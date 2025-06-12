@@ -27,6 +27,7 @@ import Footer from "./components/Footer";
 import AddressForm from "./pages/Address/AddressForm";
 import ViewOrder from "./pages/ViewOrder";
 import PlaceOrder from "./pages/Order/PlaceOrder";
+import DummyPaymentPage from "./pages/Payments/DummyPaymentPage";
 
 function App() {
   return (
@@ -77,6 +78,15 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+  path="/payment"
+  element={
+    <PrivateRoute>
+      <DummyPaymentPage/>
+    </PrivateRoute>
+  }
+/>
+
           <Route
             path="/my-orders"
             element={

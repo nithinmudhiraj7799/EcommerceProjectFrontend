@@ -150,6 +150,12 @@ const ProductListPage = () => {
                 🛒 Add to Cart
               </button>
               <button
+                onClick={() => navigate("/cart")}
+                className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold shadow-sm transition"
+              >
+                🛒
+              </button>
+              <button
                 onClick={() => navigate(`/product/${product._id}`)}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition"
               >

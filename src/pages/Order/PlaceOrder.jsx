@@ -35,7 +35,7 @@ const PlaceOrder = () => {
           },
         });
 
-        console.log("📦 Fetched Addresses:", data);
+        // console.log("📦 Fetched Addresses:", data);
         setAddresses(data);
       } catch (err) {
         console.error("❌ Failed to fetch addresses:", err);
@@ -92,7 +92,7 @@ const PlaceOrder = () => {
 
       setMessage("✅ Order placed successfully! Redirecting to payment...");
       setTimeout(() => {
-        navigate("/payment");
+        navigate("navigate(`/payment?amount=${totalPrice.toFixed(2)}`)");
       }, 2000);
     } catch (error) {
       console.error("❌ Order Placement Error:", error);
