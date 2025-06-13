@@ -24,8 +24,8 @@ const Navbar = () => {
               className="h-10 w-10 rounded-full shadow-md"
             />
             <span className="text-white text-xl font-extrabold tracking-wider">
-              WellnessMart
-            </span>
+              OrganicNestCart
+            </span> 
           </Link>
         </div>
 
