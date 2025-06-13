@@ -38,7 +38,15 @@ function App() {
 
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<ProductListPage />} />
+          <Route
+            path="/products"
+            element={
+              <PrivateRoute>
+                <ProductListPage />
+              </PrivateRoute>
+            }
+          />
+
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -74,18 +82,18 @@ function App() {
             path="/place-order"
             element={
               <PrivateRoute>
-                <PlaceOrder/>
+                <PlaceOrder />
               </PrivateRoute>
             }
           />
           <Route
-  path="/payment"
-  element={
-    <PrivateRoute>
-      <DummyPaymentPage/>
-    </PrivateRoute>
-  }
-/>
+            path="/payment"
+            element={
+              <PrivateRoute>
+                <DummyPaymentPage />
+              </PrivateRoute>
+            }
+          />
 
           <Route
             path="/my-orders"
@@ -95,20 +103,20 @@ function App() {
               </PrivateRoute>
             }
           />
-           <Route
-            path="/orders/:id" 
+          <Route
+            path="/orders/:id"
             element={
               <PrivateRoute>
-                <ViewOrder/>
+                <ViewOrder />
               </PrivateRoute>
             }
           />
-         {/*  Address Route */}
+          {/*  Address Route */}
           <Route
             path="/address"
             element={
               <PrivateRoute>
-                <AddressForm/>
+                <AddressForm />
               </PrivateRoute>
             }
           />

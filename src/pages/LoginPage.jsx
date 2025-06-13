@@ -6,6 +6,7 @@ import { AuthContext } from "../context/AuthContext";
 const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
@@ -16,6 +17,8 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const response = await axios.post(
         `https://ecommerceprojectbackend-em29.onrender.com/api/auth/login`,
@@ -35,14 +38,13 @@ const LoginPage = () => {
       login(response.data);
       navigate("/");
     } catch (err) {
-      console.error("Login error:", err.response || err);
-
       const message =
         err.response?.data?.message === "Invalid credentials"
           ? "Incorrect email or password"
           : err.response?.data?.message || "Login failed";
-
       setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,13 +81,15 @@ const LoginPage = () => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300 shadow-sm hover:shadow-md"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300 shadow-sm hover:shadow-md disabled:opacity-50"
+          disabled={loading}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
+        {/* Error message - plain red text */}
         {error && (
-          <p className="text-red-600 text-sm text-center -mt-4">{error}</p>
+          <p className="text-sm text-red-600 text-center mt-2">{error}</p>
         )}
 
         <p className="text-sm text-center text-gray-500">
